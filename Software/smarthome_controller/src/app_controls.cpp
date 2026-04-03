@@ -1,6 +1,9 @@
 #include "app_controls.h"
 
 #include <Arduino.h>
+#include <HTTPClient.h>
+#include <WiFi.h>
+#include <WiFiClient.h>
 
 #include "side1_ui.h"
 
@@ -28,6 +31,7 @@ constexpr uint8_t kPwmResolutionBits = 8;
 constexpr uint8_t kLedcChannelRed = 0;
 constexpr uint8_t kLedcChannelGreen = 1;
 constexpr uint8_t kLedcChannelBlue = 2;
+constexpr char kLampRelayBaseUrl[] = "http://192.168.1.15/relay/0?turn=";
 
 uint8_t rgb_values[kChannelCount] = {0, 0, 0};
 uint8_t active_channel = 0;
@@ -52,6 +56,41 @@ void apply_pwm() {
 void sync_ui() {
   side1::set_rgb_state(rgb_values[0], rgb_values[1], rgb_values[2], active_channel);
   side1::set_lamp_state(lamp_on);
+}
+
+bool send_lamp_http_request(bool on) {
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("[LAMP] Skipped HTTP request: WLAN not connected");
+    return false;
+  }
+
+  WiFiClient client;
+  HTTPClient http;
+
+  String url = kLampRelayBaseUrl;
+  url += on ? "on" : "off";
+
+  if (!http.begin(client, url)) {
+    Serial.printf("[LAMP] Failed to begin HTTP request: %s\n", url.c_str());
+    return false;
+  }
+
+  const int http_code = http.GET();
+  if (http_code <= 0) {
+    Serial.printf("[LAMP] HTTP request failed: %s, code=%d\n", url.c_str(), http_code);
+    http.end();
+    return false;
+  }
+
+  const String response = http.getString();
+  http.end();
+
+  Serial.printf("[LAMP] Relay %s request sent, code=%d\n", on ? "ON" : "OFF", http_code);
+  if (response.length() > 0) {
+    Serial.printf("[LAMP] Response: %s\n", response.c_str());
+  }
+
+  return true;
 }
 
 void select_next_channel() {
@@ -194,9 +233,24 @@ void init() {
 }
 
 void toggle_lamp() {
-  lamp_on = !lamp_on;
+  set_lamp(!lamp_on);
+}
+
+bool set_lamp(bool on) {
+  if (lamp_on == on) {
+    last_interaction_ms = millis();
+    side1::set_lamp_state(lamp_on);
+    return true;
+  }
+
+  if (!send_lamp_http_request(on)) {
+    return false;
+  }
+
+  lamp_on = on;
   last_interaction_ms = millis();
   side1::set_lamp_state(lamp_on);
+  return true;
 }
 
 void sync_state_to_ui() {

@@ -7,6 +7,7 @@ namespace app_controls {
 void init();
 void update();
 void toggle_lamp();
+bool set_lamp(bool on);
 void sync_state_to_ui();
 
 // Returns milliseconds since last interaction (lamp button or joystick movement)

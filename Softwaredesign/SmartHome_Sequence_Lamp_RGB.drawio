@@ -1,0 +1,203 @@
+<mxfile host="65bd71144e">
+    <diagram id="seq-lamp" name="Sequence - Lamp ON OFF">
+        <mxGraphModel dx="1342" dy="864" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="l-title" value="Sequence Diagram: Turn Lamp ON/OFF" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=20;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="20" width="560" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="l-p1" value="User" style="shape=umlActor;html=1;verticalLabelPosition=bottom;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="120" y="90" width="40" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="l-p2" value="Touch UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="100" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="l-p3" value="Controller" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="560" y="100" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="l-p4" value="WLAN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="100" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="l-p5" value="Shelly Lamp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+                    <mxGeometry x="1080" y="100" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="l-life2" value="" style="shape=line;strokeWidth=1.2;dashed=1;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="370" y="140" width="1" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="l-life3" value="" style="shape=line;strokeWidth=1.2;dashed=1;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="140" width="1" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="l-life4" value="" style="shape=line;strokeWidth=1.2;dashed=1;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="890" y="140" width="1" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="l-life5" value="" style="shape=line;strokeWidth=1.2;dashed=1;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1160" y="140" width="1" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="l-m1" value="1. Tap lamp toggle (ON)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="l-p1" target="l-p2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="l-m2" value="2. Toggle state ON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="l-p2" target="l-p3" edge="1">
+                    <mxGeometry x="-0.0526" y="-10" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="450" y="120"/>
+                            <mxPoint x="450" y="250"/>
+                            <mxPoint x="540" y="250"/>
+                            <mxPoint x="540" y="120"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="l-m3" value="3. HTTP command /relay?turn=on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="l-p3" target="l-p4" edge="1">
+                    <mxGeometry y="-10" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="710" y="120"/>
+                            <mxPoint x="710" y="320"/>
+                            <mxPoint x="800" y="320"/>
+                            <mxPoint x="800" y="120"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="l-m4" value="4. Forward request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="l-p4" target="l-p5" edge="1">
+                    <mxGeometry x="-0.0303" y="-10" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="970" y="120"/>
+                            <mxPoint x="970" y="390"/>
+                            <mxPoint x="1060" y="390"/>
+                            <mxPoint x="1060" y="120"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="l-m5" value="5. ACK lamp ON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;dashed=1;html=1;endArrow=open;endFill=0;strokeWidth=1.4;" parent="1" source="l-p5" target="l-p3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1160" y="430"/>
+                            <mxPoint x="660" y="430"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="l-m6" value="6. Update button + status indicator" style="edgeStyle=orthogonalEdgeStyle;rounded=0;dashed=1;html=1;endArrow=open;endFill=0;strokeWidth=1.4;" parent="1" source="l-p3" target="l-p2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="630" y="530"/>
+                            <mxPoint x="370" y="530"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="l-note" value="OFF flow is identical:&lt;br&gt;turn=off and status OFF" style="shape=note;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="1280" y="300" width="210" height="100" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="seq-rgb" name="Sequence - RGB Control">
+        <mxGraphModel dx="1917" dy="1234" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="r-title" value="Sequence Diagram: RGB LED Control" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=20;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="20" width="760" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="r-p1" value="User" style="shape=umlActor;html=1;verticalLabelPosition=bottom;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="80" width="40" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="r-p2" value="Touch UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="100" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="r-p3" value="Controller" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="560" y="100" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="r-p4" value="PWM Driver" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="100" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="r-p5" value="RGB LED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+                    <mxGeometry x="1080" y="100" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="r-life2" value="" style="shape=line;strokeWidth=1.2;dashed=1;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="370" y="140" width="1" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="r-life3" value="" style="shape=line;strokeWidth=1.2;dashed=1;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="140" width="1" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="r-life4" value="" style="shape=line;strokeWidth=1.2;dashed=1;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="890" y="140" width="1" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="r-life5" value="" style="shape=line;strokeWidth=1.2;dashed=1;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1160" y="140" width="1" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="r-m1" value="1. Toggle channel switch ON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" target="r-p2" edge="1">
+                    <mxGeometry x="-0.1985" y="10" relative="1" as="geometry">
+                        <mxPoint x="110" y="110" as="sourcePoint"/>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-m2" value="2. Switch state = enabled" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="r-p2" target="r-p3" edge="1">
+                    <mxGeometry x="-0.0526" y="-10" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="450" y="120"/>
+                            <mxPoint x="450" y="250"/>
+                            <mxPoint x="540" y="250"/>
+                            <mxPoint x="540" y="120"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-m3" value="3. Move slider (10-100%)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="r-p1" target="r-p2" edge="1">
+                    <mxGeometry x="-0.2105" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="170" y="140"/>
+                            <mxPoint x="170" y="140"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-m4" value="4. Send channel value" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="r-p2" target="r-p3" edge="1">
+                    <mxGeometry y="-20" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="450" y="120"/>
+                            <mxPoint x="450" y="340"/>
+                            <mxPoint x="540" y="340"/>
+                            <mxPoint x="540" y="120"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-m5" value="5. Update PWM duty cycle" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="r-p3" target="r-p4" edge="1">
+                    <mxGeometry y="-10" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="710" y="120"/>
+                            <mxPoint x="710" y="460"/>
+                            <mxPoint x="800" y="460"/>
+                            <mxPoint x="800" y="120"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-m6" value="6. Drive R/G/B output" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="r-p4" target="r-p5" edge="1">
+                    <mxGeometry y="-10" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="970" y="120"/>
+                            <mxPoint x="970" y="530"/>
+                            <mxPoint x="1060" y="530"/>
+                            <mxPoint x="1060" y="120"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-m7" value="7. Update value indicator" style="edgeStyle=orthogonalEdgeStyle;rounded=0;dashed=1;html=1;endArrow=open;endFill=0;strokeWidth=1.4;" parent="1" source="r-p3" target="r-p2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="630" y="600"/>
+                            <mxPoint x="380" y="600"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-note" value="If switch is OFF: slider input is ignored,\nno PWM update is sent." style="shape=note;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="1280" y="360" width="230" height="100" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

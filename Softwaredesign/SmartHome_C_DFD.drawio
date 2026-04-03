@@ -1,0 +1,237 @@
+<mxfile host="65bd71144e">
+    <diagram id="context-level-0" name="Context (Level 0)">
+        <mxGraphModel dx="1342" dy="864" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="ctitle" value="Smart Home Controller - Context Diagram (DFD Level 0)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=20;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="20" width="760" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="cp0" value="P0 Smart Home Controller" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="300" width="360" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="ceu1" value="E1 User&lt;br&gt;(Touch)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="120" y="300" width="220" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="ceu2" value="E2 Touch Display&lt;br&gt;(ILI9844)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="120" y="450" width="220" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="ceu3" value="E3 Temp/Humidity Sensor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="1240" y="240" width="240" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="ceu4" value="E4 Shelly Lamp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="1240" y="380" width="240" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="ceu5" value="E5 RGB LED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="1240" y="520" width="240" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="ceu6" value="E6 WLAN/Internet" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="450" y="700" width="240" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="ceu7" value="E7 OpenWeather API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="880" y="700" width="240" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="ce1" value="Touch events" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="ceu1" target="cp0" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ce2" value="UI pages + warnings" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="cp0" target="ceu2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ce3" value="Temp/Humidity (15s)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="ceu3" target="cp0" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1105" y="285"/>
+                            <mxPoint x="1105" y="340"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ce4" value="Lamp ON/OFF (HTTP)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="cp0" target="ceu4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ce5" value="PWM RGB values" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="cp0" target="ceu5" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1110" y="450"/>
+                            <mxPoint x="1110" y="565"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ce6" value="SSID status" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="ceu6" target="cp0" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="570" y="590"/>
+                            <mxPoint x="700" y="590"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ce7" value="Weather/Time API request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.5;" parent="1" source="cp0" target="ceu7" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="880" y="590"/>
+                            <mxPoint x="1000" y="590"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="dfd-level-1" name="DFD (Level 1)">
+        <mxGraphModel dx="2065" dy="1329" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="dtitle" value="Smart Home Controller - Data Flow Diagram (Level 1)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=20;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="20" width="820" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="de1" value="E1 User" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="205" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="de2" value="E2 Touch Display" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="320" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="de3" value="E3 Sensor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="605" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="de4" value="E4 Shelly Lamp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="1490" y="280" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="de5" value="E5 RGB LED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="1490" y="420" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="de6" value="E6 WLAN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="1490" y="590" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="de7" value="E7 OpenWeather API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="1490" y="700" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="dp1" value="P1 UI &amp; Interaction Manager" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="180" width="290" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="dp2" value="P2 Lamp &amp; LED Control" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="860" y="280" width="290" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="dp3" value="P3 Sensor Monitoring &amp; Safety" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="580" width="290" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="dp4" value="P4 Time/Weather Sync" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="860" y="620" width="290" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="ds1" value="D1 Runtime State&lt;br&gt;(current page, slider values, switches, WLAN status)" style="shape=datastore;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="920" y="100" width="320" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="ds2" value="D2 Sensor &amp;amp; Weather Data&lt;br&gt;(temp, humidity, date/time, weather)" style="shape=datastore;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="405" y="400" width="320" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="df1" value="Touch input" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="de1" target="dp1" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="df2" value="Rendered UI + alerts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="dp1" target="de2" edge="1">
+                    <mxGeometry x="0.2633" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="460" y="350"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="df3" value="Control intent&lt;br&gt;(lamp toggle, slider values)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="dp1" target="dp2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="df4" value="System state" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="dp1" target="ds1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="565" y="150"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="df5" value="State read" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;exitX=0;exitY=0.7;exitDx=0;exitDy=0;" parent="1" source="ds1" target="dp1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="800" y="170"/>
+                            <mxPoint x="800" y="200"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="df6" value="Lamp ON/OFF (HTTP)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="dp2" target="de4" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1240" y="315"/>
+                            <mxPoint x="1240" y="315"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="df7" value="PWM outputs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="dp2" target="de5" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1580" y="390"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="df8" value="Safety lock state" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="dp3" target="dp2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="670" y="520"/>
+                            <mxPoint x="1005" y="520"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="df9" value="Temp/Humidity sample (15s)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="de3" target="dp3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="df10" value="Safety status + sensor data" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="dp3" target="ds2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="df11" value="Sensor data for UI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="ds2" target="dp1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="540" y="360"/>
+                            <mxPoint x="540" y="360"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="df12" value="WLAN status" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="de6" target="dp4" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1320" y="630"/>
+                            <mxPoint x="1320" y="660"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="df13" value="Weather/time request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="dp4" target="de7" edge="1">
+                    <mxGeometry x="-0.2144" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1320" y="690"/>
+                            <mxPoint x="1320" y="735"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="df14" value="Weather/time response" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="de7" target="dp4" edge="1">
+                    <mxGeometry x="-0.1158" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1320" y="735"/>
+                            <mxPoint x="1320" y="710"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="df15" value="Updated weather/date/time" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="dp4" target="ds2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="780" y="630"/>
+                            <mxPoint x="780" y="450"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="df16" value="Data for page 3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.4;" parent="1" source="ds2" target="dp1" edge="1">
+                    <mxGeometry x="-0.607" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="600" y="350"/>
+                            <mxPoint x="600" y="350"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

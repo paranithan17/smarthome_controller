@@ -4,6 +4,7 @@
 #include <HTTPClient.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
+#include <freertos/queue.h>
 
 #include "side1_ui.h"
 
@@ -46,6 +47,7 @@ uint32_t last_lamp_button_ms = 0;
 uint32_t last_interaction_ms = 0;
 
 int joystick_center_x = 2048;
+QueueHandle_t s_lamp_command_queue = nullptr;
 
 void apply_pwm() {
   ledcWrite(kLedcChannelRed, rgb_values[0]);
@@ -227,6 +229,11 @@ void init() {
   last_joystick_switch_state = digitalRead(kJoystickSwitchPin);
   calibrate_joystick_center();
   last_joystick_update_ms = millis();
+  last_interaction_ms = millis();
+
+  if (s_lamp_command_queue == nullptr) {
+    s_lamp_command_queue = xQueueCreate(1, sizeof(bool));
+  }
 
   apply_pwm();
   sync_ui();
@@ -243,14 +250,27 @@ bool set_lamp(bool on) {
     return true;
   }
 
-  if (!send_lamp_http_request(on)) {
-    return false;
-  }
-
   lamp_on = on;
   last_interaction_ms = millis();
   side1::set_lamp_state(lamp_on);
+
+  if (s_lamp_command_queue != nullptr) {
+    xQueueOverwrite(s_lamp_command_queue, &on);
+  }
+
   return true;
+}
+
+bool receive_lamp_command(bool &desired_on, TickType_t wait_ticks) {
+  if (s_lamp_command_queue == nullptr) {
+    return false;
+  }
+
+  return xQueueReceive(s_lamp_command_queue, &desired_on, wait_ticks) == pdTRUE;
+}
+
+bool send_lamp_http(bool on) {
+  return send_lamp_http_request(on);
 }
 
 void sync_state_to_ui() {

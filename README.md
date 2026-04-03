@@ -32,9 +32,9 @@ Side 3 time and weather configuration:
 If the display has not detected interaction on the touchscreen for a certain time like 10sec it should change the side every 8 seconds in an loop. If the touchscreen sense an interaction, the program heads directly to the side 1.
 
 This program uses FreeRTOS.
-Higher Priorities are: Sensing the humidity, Controll the Lamp and LED.
+Higher Priorities are: Controll the Lamp and LED.
 Medium Priority: Synchronise time and Weather from Openweather
-Low Priority: Sensing Display interactions and everything else.
+Low Priority: Sensing interactions with joy stick and pushbuttons and everything else.
 
 Side 1 Pin Connections (Current) - RGB LED Blue -> D13 (GPIO13, PWM output) - RGB LED Green -> D12 (GPIO12, PWM output) - RGB LED Red -> D14 (GPIO14, PWM output)
 

@@ -1,3 +1,8 @@
+/**
+ * @file lvgl_port.h
+ * @brief Exposes LVGL display initialization and periodic rendering helper functions.
+ * @author Paranithan Paramalingam (BFH-TI)
+ */
 #pragma once
 
 #include <Arduino.h>

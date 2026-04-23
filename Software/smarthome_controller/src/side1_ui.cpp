@@ -1,3 +1,8 @@
+/**
+ * @file side1_ui.cpp
+ * @brief Implementation of the lamp and RGB LED screen.
+ * @author Paranithan Paramalingam (BFH-TI)
+ */
 #include "side1_ui.h"
 
 #include <Arduino.h>
@@ -8,11 +13,10 @@
 
 namespace side1 {
 
-static const char *kColorNames[3] = {"Red", "Green", "Blue"};
+static const char *colorNames[3] = {"Red", "Green", "Blue"};
 
 static lv_obj_t *s_lamp_button = nullptr;
 static lv_obj_t *s_lamp_button_label = nullptr;
-static lv_obj_t *s_active_channel_label = nullptr;
 static lv_obj_t *s_sliders[3] = {nullptr, nullptr, nullptr};
 static lv_obj_t *s_slider_values[3] = {nullptr, nullptr, nullptr};
 static lv_obj_t *s_channel_switches[3] = {nullptr, nullptr, nullptr};
@@ -55,9 +59,6 @@ static void set_channel_selected(uint8_t index) {
     }
   }
 
-  if (is_obj_valid(s_active_channel_label)) {
-    lv_label_set_text_fmt(s_active_channel_label, "Selected: %s", kColorNames[index]);
-  }
 }
 
 static void set_lamp_label(bool on) {
@@ -114,7 +115,6 @@ void build_screen(lv_obj_t *parent) {
   // Reset references before creating new widgets for this rebuilt page.
   s_lamp_button = nullptr;
   s_lamp_button_label = nullptr;
-  s_active_channel_label = nullptr;
   for (uint8_t i = 0; i < 3; i++) {
     s_sliders[i] = nullptr;
     s_slider_values[i] = nullptr;
@@ -143,9 +143,6 @@ void build_screen(lv_obj_t *parent) {
   lv_obj_t *room_title = lv_label_create(top_panel);
   lv_label_set_text(room_title, "Lamp");
   lv_obj_align(room_title, LV_ALIGN_TOP_MID, 0, 8);
-
-
-
   s_lamp_button = lv_btn_create(top_panel);
   lv_obj_set_size(s_lamp_button, 136, 56);
   lv_obj_align(s_lamp_button, LV_ALIGN_CENTER, 0, 18);
@@ -154,10 +151,6 @@ void build_screen(lv_obj_t *parent) {
   s_lamp_button_label = lv_label_create(s_lamp_button);
   lv_label_set_text(s_lamp_button_label, "OFF");
   lv_obj_center(s_lamp_button_label);
-
- // s_active_channel_label = lv_label_create(top_panel);
- // lv_label_set_text(s_active_channel_label, "Selected: Red");
- // lv_obj_align(s_active_channel_label, LV_ALIGN_BOTTOM_MID, 0, -12);
 
   lv_obj_t *bottom_panel = lv_obj_create(side_card);
   lv_obj_set_size(bottom_panel, lv_pct(100), 154);
@@ -174,7 +167,7 @@ void build_screen(lv_obj_t *parent) {
 
   for (uint8_t i = 0; i < 3; i++) {
     lv_obj_t *name = lv_label_create(bottom_panel);
-    lv_label_set_text(name, kColorNames[i]);
+    lv_label_set_text(name, colorNames[i]);
     lv_obj_align(name, LV_ALIGN_TOP_LEFT, 12, 30 + (i * 36));
 
     s_sliders[i] = lv_slider_create(bottom_panel);
@@ -205,7 +198,6 @@ void build_screen(lv_obj_t *parent) {
   lv_obj_align(s_arc_loader, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 
   init_channel_widgets();
-  app_controls::sync_state_to_ui();
   apply_cached_state_to_widgets();
 }
 

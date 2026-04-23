@@ -1,3 +1,8 @@
+/**
+ * @file side1_ui.h
+ * @brief Declares UI functions for the lamp and RGB LED view.
+ * @author Paranithan Paramalingam (BFH-TI)
+ */
 #pragma once
 
 #include <stdint.h>

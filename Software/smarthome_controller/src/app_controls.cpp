@@ -1,3 +1,8 @@
+/**
+ * @file app_controls.cpp
+ * @brief Hardware input/output control implementation for lamp and RGB handling.
+ * @author Paranithan Paramalingam (BFH-TI)
+ */
 #include "app_controls.h"
 
 #include <Arduino.h>
@@ -5,38 +10,40 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <freertos/queue.h>
-
-#include "side1_ui.h"
+#include <freertos/semphr.h>
+#include <esp_timer.h>
 
 namespace app_controls {
 
 namespace {
 
-constexpr int kRedPwmPin = 14;
-constexpr int kGreenPwmPin = 12;
-constexpr int kBluePwmPin = 13;
+constexpr int redPwmPin = 14;
+constexpr int greenPwmPin = 12;
+constexpr int bluePwmPin = 13;
 
 // Use an ADC1 pin for joystick axis because ADC2 pins are blocked when WiFi is active on ESP32.
-constexpr int kJoystickXPin = 34;
-constexpr int kJoystickSwitchPin = 26;
-constexpr int kLampButtonPin = 25;
+constexpr int joystickXPin = 34;
+constexpr int joystickSwitchPin = 26;
+constexpr int lampButtonPin = 25;
 
-constexpr uint8_t kChannelCount = 3;
-constexpr uint32_t kButtonDebounceMs = 60;
-constexpr uint32_t kJoystickUpdateMs = 30;
-constexpr int kJoystickDeadzone = 220;
-constexpr int kJoystickStrongTilt = 900;
-constexpr uint32_t kPwmFrequencyHz = 5000;
-constexpr uint8_t kPwmResolutionBits = 8;
+constexpr uint8_t channelCount = 3;
+constexpr uint32_t buttonDebounceMs = 60;
+constexpr uint32_t joystickUpdateMs = 30;
+constexpr int joystickDeadzone = 220;
+constexpr int joystickStrongTilt = 900;
+constexpr uint32_t pwmFrequencyHz = 5000;
+constexpr uint8_t pwmResolutionBits = 8;
 
-constexpr uint8_t kLedcChannelRed = 0;
-constexpr uint8_t kLedcChannelGreen = 1;
-constexpr uint8_t kLedcChannelBlue = 2;
-constexpr char kLampRelayBaseUrl[] = "http://192.168.1.15/relay/0?turn=";
+constexpr uint8_t ledcChannelRed = 0;
+constexpr uint8_t ledcChannelGreen = 1;
+constexpr uint8_t ledcChannelBlue = 2;
+constexpr char lampRelayBaseUrl[] = "http://192.168.1.15/relay/0?turn=";
 
-uint8_t rgb_values[kChannelCount] = {0, 0, 0};
+uint8_t rgb_values[channelCount] = {0, 0, 0};
 uint8_t active_channel = 0;
 bool lamp_on = false;
+
+SemaphoreHandle_t s_led_state_mutex = nullptr;
 
 int last_joystick_switch_state = HIGH;
 int last_lamp_button_state = HIGH;
@@ -49,15 +56,42 @@ uint32_t last_interaction_ms = 0;
 int joystick_center_x = 2048;
 QueueHandle_t s_lamp_command_queue = nullptr;
 
+TaskHandle_t s_lamp_task_handle = nullptr;
+TaskHandle_t s_led_task_handle = nullptr;
+
+esp_timer_handle_t s_joystick_timer = nullptr;
+
 void apply_pwm() {
-  ledcWrite(kLedcChannelRed, rgb_values[0]);
-  ledcWrite(kLedcChannelGreen, rgb_values[1]);
-  ledcWrite(kLedcChannelBlue, rgb_values[2]);
+  ledcWrite(ledcChannelRed, rgb_values[0]);
+  ledcWrite(ledcChannelGreen, rgb_values[1]);
+  ledcWrite(ledcChannelBlue, rgb_values[2]);
 }
 
-void sync_ui() {
-  side1::set_rgb_state(rgb_values[0], rgb_values[1], rgb_values[2], active_channel);
-  side1::set_lamp_state(lamp_on);
+void notify_task_from_isr(TaskHandle_t task_handle) {
+  if (task_handle == nullptr) {
+    return;
+  }
+
+  BaseType_t higher_priority_task_woken = pdFALSE;
+  vTaskNotifyGiveFromISR(task_handle, &higher_priority_task_woken);
+  if (higher_priority_task_woken == pdTRUE) {
+    portYIELD_FROM_ISR();
+  }
+}
+
+void IRAM_ATTR lamp_button_isr() {
+  notify_task_from_isr(s_lamp_task_handle);
+}
+
+void IRAM_ATTR joystick_button_isr() {
+  notify_task_from_isr(s_led_task_handle);
+}
+
+void joystick_timer_callback(void *arg) {
+  (void)arg;
+  if (s_led_task_handle != nullptr) {
+    xTaskNotifyGive(s_led_task_handle);
+  }
 }
 
 bool send_lamp_http_request(bool on) {
@@ -69,7 +103,7 @@ bool send_lamp_http_request(bool on) {
   WiFiClient client;
   HTTPClient http;
 
-  String url = kLampRelayBaseUrl;
+  String url = lampRelayBaseUrl;
   url += on ? "on" : "off";
 
   if (!http.begin(client, url)) {
@@ -96,45 +130,61 @@ bool send_lamp_http_request(bool on) {
 }
 
 void select_next_channel() {
-  active_channel = static_cast<uint8_t>((active_channel + 1) % kChannelCount);
+  if (s_led_state_mutex != nullptr) {
+    xSemaphoreTake(s_led_state_mutex, portMAX_DELAY);
+  }
+  active_channel = static_cast<uint8_t>((active_channel + 1) % channelCount);
+  if (s_led_state_mutex != nullptr) {
+    xSemaphoreGive(s_led_state_mutex);
+  }
   last_interaction_ms = millis();
-  side1::set_active_channel(active_channel);
 }
 
 void adjust_active_channel(int delta) {
+  if (s_led_state_mutex != nullptr) {
+    xSemaphoreTake(s_led_state_mutex, portMAX_DELAY);
+  }
+
   const int next_value = static_cast<int>(rgb_values[active_channel]) + delta;
   const uint8_t clamped_value = static_cast<uint8_t>(constrain(next_value, 0, 255));
 
   if (clamped_value == rgb_values[active_channel]) {
+    if (s_led_state_mutex != nullptr) {
+      xSemaphoreGive(s_led_state_mutex);
+    }
     return;
   }
 
   rgb_values[active_channel] = clamped_value;
-  last_interaction_ms = millis();
   apply_pwm();
-  side1::set_rgb_channel_value(active_channel, clamped_value);
+
+  if (s_led_state_mutex != nullptr) {
+    xSemaphoreGive(s_led_state_mutex);
+  }
+
+  last_interaction_ms = millis();
 }
 
-void update_joystick_axis() {
+bool update_joystick_axis() {
   const uint32_t now = millis();
-  if (now - last_joystick_update_ms < kJoystickUpdateMs) {
-    return;
+  if (now - last_joystick_update_ms < joystickUpdateMs) {
+    return false;
   }
 
   last_joystick_update_ms = now;
 
-  const int raw_x = analogRead(kJoystickXPin);
+  const int raw_x = analogRead(joystickXPin);
   const int delta = raw_x - joystick_center_x;
   const int magnitude = abs(delta);
 
-  if (magnitude <= kJoystickDeadzone) {
-    return;
+  if (magnitude <= joystickDeadzone) {
+    return false;
   }
 
   int step = 1;
-  if (magnitude > kJoystickStrongTilt) {
+  if (magnitude > joystickStrongTilt) {
     step = 4;
-  } else if (magnitude > kJoystickStrongTilt / 2) {
+  } else if (magnitude > joystickStrongTilt / 2) {
     step = 2;
   }
 
@@ -143,30 +193,32 @@ void update_joystick_axis() {
   } else {
     adjust_active_channel(-step);
   }
+
+  return true;
 }
 
 void calibrate_joystick_center() {
   int total = 0;
-  constexpr int kSampleCount = 16;
+  constexpr int sampleCount = 16;
 
-  for (int i = 0; i < kSampleCount; i++) {
-    total += analogRead(kJoystickXPin);
+  for (int i = 0; i < sampleCount; i++) {
+    total += analogRead(joystickXPin);
     delay(2);
   }
 
-  joystick_center_x = total / kSampleCount;
+  joystick_center_x = total / sampleCount;
 }
 
-void update_joystick_switch() {
-  const int switch_state = digitalRead(kJoystickSwitchPin);
+bool update_joystick_switch() {
+  const int switch_state = digitalRead(joystickSwitchPin);
   if (switch_state == last_joystick_switch_state) {
-    return;
+    return false;
   }
 
   const uint32_t now = millis();
-  if (now - last_joystick_switch_ms < kButtonDebounceMs) {
+  if (now - last_joystick_switch_ms < buttonDebounceMs) {
     last_joystick_switch_state = switch_state;
-    return;
+    return false;
   }
 
   last_joystick_switch_ms = now;
@@ -174,23 +226,26 @@ void update_joystick_switch() {
 
   if (switch_state == LOW) {
     select_next_channel();
+    return true;
   }
+
+  return false;
 }
 
-void update_lamp_button() {
-  if (kLampButtonPin < 0) {
-    return;
+bool update_lamp_button() {
+  if (lampButtonPin < 0) {
+    return false;
   }
 
-  const int button_state = digitalRead(kLampButtonPin);
+  const int button_state = digitalRead(lampButtonPin);
   if (button_state == last_lamp_button_state) {
-    return;
+    return false;
   }
 
   const uint32_t now = millis();
-  if (now - last_lamp_button_ms < kButtonDebounceMs) {
+  if (now - last_lamp_button_ms < buttonDebounceMs) {
     last_lamp_button_state = button_state;
-    return;
+    return false;
   }
 
   last_lamp_button_ms = now;
@@ -198,35 +253,38 @@ void update_lamp_button() {
 
   if (button_state == LOW) {
     toggle_lamp();
+    return true;
   }
+
+  return false;
 }
 
 }  // namespace
 
 void init() {
-  pinMode(kRedPwmPin, OUTPUT);
-  pinMode(kGreenPwmPin, OUTPUT);
-  pinMode(kBluePwmPin, OUTPUT);
+  pinMode(redPwmPin, OUTPUT);
+  pinMode(greenPwmPin, OUTPUT);
+  pinMode(bluePwmPin, OUTPUT);
 
   analogReadResolution(12);
-  analogSetPinAttenuation(kJoystickXPin, ADC_11db);
+  analogSetPinAttenuation(joystickXPin, ADC_11db);
 
-  ledcSetup(kLedcChannelRed, kPwmFrequencyHz, kPwmResolutionBits);
-  ledcSetup(kLedcChannelGreen, kPwmFrequencyHz, kPwmResolutionBits);
-  ledcSetup(kLedcChannelBlue, kPwmFrequencyHz, kPwmResolutionBits);
+  ledcSetup(ledcChannelRed, pwmFrequencyHz, pwmResolutionBits);
+  ledcSetup(ledcChannelGreen, pwmFrequencyHz, pwmResolutionBits);
+  ledcSetup(ledcChannelBlue, pwmFrequencyHz, pwmResolutionBits);
 
-  ledcAttachPin(kRedPwmPin, kLedcChannelRed);
-  ledcAttachPin(kGreenPwmPin, kLedcChannelGreen);
-  ledcAttachPin(kBluePwmPin, kLedcChannelBlue);
+  ledcAttachPin(redPwmPin, ledcChannelRed);
+  ledcAttachPin(greenPwmPin, ledcChannelGreen);
+  ledcAttachPin(bluePwmPin, ledcChannelBlue);
 
-  pinMode(kJoystickSwitchPin, INPUT_PULLUP);
+  pinMode(joystickSwitchPin, INPUT_PULLUP);
 
-  if (kLampButtonPin >= 0) {
-    pinMode(kLampButtonPin, INPUT_PULLUP);
-    last_lamp_button_state = digitalRead(kLampButtonPin);
+  if (lampButtonPin >= 0) {
+    pinMode(lampButtonPin, INPUT_PULLUP);
+    last_lamp_button_state = digitalRead(lampButtonPin);
   }
 
-  last_joystick_switch_state = digitalRead(kJoystickSwitchPin);
+  last_joystick_switch_state = digitalRead(joystickSwitchPin);
   calibrate_joystick_center();
   last_joystick_update_ms = millis();
   last_interaction_ms = millis();
@@ -235,8 +293,46 @@ void init() {
     s_lamp_command_queue = xQueueCreate(1, sizeof(bool));
   }
 
+  if (s_led_state_mutex == nullptr) {
+    s_led_state_mutex = xSemaphoreCreateMutex();
+  }
+
+  attachInterrupt(digitalPinToInterrupt(joystickSwitchPin), joystick_button_isr, CHANGE);
+
+  if (lampButtonPin >= 0) {
+    attachInterrupt(digitalPinToInterrupt(lampButtonPin), lamp_button_isr, CHANGE);
+  }
+
+  if (s_joystick_timer == nullptr) {
+    const esp_timer_create_args_t timer_args = {
+        .callback = &joystick_timer_callback,
+        .arg = nullptr,
+        .dispatch_method = ESP_TIMER_TASK,
+        .name = "joy_poll"};
+
+    if (esp_timer_create(&timer_args, &s_joystick_timer) == ESP_OK) {
+      esp_timer_start_periodic(s_joystick_timer, static_cast<uint64_t>(joystickUpdateMs) * 1000ULL);
+    }
+  }
+
   apply_pwm();
-  sync_ui();
+}
+
+void register_task_handles(TaskHandle_t lamp_task, TaskHandle_t led_task) {
+  s_lamp_task_handle = lamp_task;
+  s_led_task_handle = led_task;
+}
+
+bool process_lamp_button_event() {
+  return update_lamp_button();
+}
+
+bool process_joystick_button_event() {
+  return update_joystick_switch();
+}
+
+bool process_joystick_axis_event() {
+  return update_joystick_axis();
 }
 
 void toggle_lamp() {
@@ -246,19 +342,36 @@ void toggle_lamp() {
 bool set_lamp(bool on) {
   if (lamp_on == on) {
     last_interaction_ms = millis();
-    side1::set_lamp_state(lamp_on);
     return true;
   }
 
   lamp_on = on;
   last_interaction_ms = millis();
-  side1::set_lamp_state(lamp_on);
 
   if (s_lamp_command_queue != nullptr) {
     xQueueOverwrite(s_lamp_command_queue, &on);
   }
 
   return true;
+}
+
+bool get_lamp_state() {
+  return lamp_on;
+}
+
+void get_led_state(uint8_t &red, uint8_t &green, uint8_t &blue, uint8_t &channel) {
+  if (s_led_state_mutex != nullptr) {
+    xSemaphoreTake(s_led_state_mutex, portMAX_DELAY);
+  }
+
+  red = rgb_values[0];
+  green = rgb_values[1];
+  blue = rgb_values[2];
+  channel = active_channel;
+
+  if (s_led_state_mutex != nullptr) {
+    xSemaphoreGive(s_led_state_mutex);
+  }
 }
 
 bool receive_lamp_command(bool &desired_on, TickType_t wait_ticks) {
@@ -273,22 +386,12 @@ bool send_lamp_http(bool on) {
   return send_lamp_http_request(on);
 }
 
-void sync_state_to_ui() {
-  sync_ui();
-}
-
 uint32_t get_ms_since_last_interaction() {
   return millis() - last_interaction_ms;
 }
 
 void reset_interaction_timer() {
   last_interaction_ms = millis();
-}
-
-void update() {
-  update_joystick_axis();
-  update_joystick_switch();
-  update_lamp_button();
 }
 
 }  // namespace app_controls

@@ -1,3 +1,8 @@
+/**
+ * @file side3_ui.h
+ * @brief Declares UI functions for the time and weather view.
+ * @author Paranithan Paramalingam (BFH-TI)
+ */
 #pragma once
 
 #include <lvgl.h>

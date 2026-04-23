@@ -1,3 +1,8 @@
+/**
+ * @file side3_ui.cpp
+ * @brief Implementation of the time and weather screen.
+ * @author Paranithan Paramalingam (BFH-TI)
+ */
 #include "side3_ui.h"
 
 #include <Arduino.h>

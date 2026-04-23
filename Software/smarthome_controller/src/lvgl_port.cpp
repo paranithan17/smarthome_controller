@@ -1,3 +1,8 @@
+/**
+ * @file lvgl_port.cpp
+ * @brief LVGL display backend for TFT_eSPI rendering and periodic handler execution.
+ * @author Paranithan Paramalingam (BFH-TI)
+ */
 #include "lvgl_port.h"
 
 #include <TFT_eSPI.h>
@@ -10,11 +15,11 @@ namespace {
 TFT_eSPI tft = TFT_eSPI();
 lv_display_t *display = nullptr;
 
-constexpr uint16_t kScreenWidth = 480;
-constexpr uint16_t kScreenHeight = 320;
-constexpr uint16_t kBufferLines = 4;
+constexpr uint16_t screenWidth = 480;
+constexpr uint16_t screenHeight = 320;
+constexpr uint16_t bufferLines = 4;
 
-static lv_color_t draw_buf_1[kScreenWidth * kBufferLines];
+static lv_color_t draw_buf_1[screenWidth * bufferLines];
 
 uint32_t last_tick_ms = 0;
 
@@ -39,7 +44,7 @@ void init() {
   tft.setRotation(1);
   tft.fillScreen(TFT_BLACK);
 
-  display = lv_display_create(kScreenWidth, kScreenHeight);
+  display = lv_display_create(screenWidth, screenHeight);
   lv_display_set_flush_cb(display, display_flush_cb);
   lv_display_set_buffers(display, draw_buf_1, nullptr, sizeof(draw_buf_1), LV_DISPLAY_RENDER_MODE_PARTIAL);
 

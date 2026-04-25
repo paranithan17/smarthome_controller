@@ -29,6 +29,7 @@ TaskHandle_t s_display_task_handle = nullptr;
 TaskHandle_t s_time_task_handle = nullptr;
 TaskHandle_t s_weather_task_handle = nullptr;
 
+// Shared RTOS communication primitives.
 QueueHandle_t s_time_queue = nullptr;
 SemaphoreHandle_t s_weather_mutex = nullptr;
 SemaphoreHandle_t s_network_mutex = nullptr;
@@ -99,9 +100,13 @@ EventBits_t active_channel_to_event_bit(uint8_t active_channel) {
 }  // namespace
 
 void init() {
+  // Single-slot queue keeps only the latest time sample for UI.
   s_time_queue = xQueueCreate(1, sizeof(TimeMessage));
+  // Mutex protects read/write access to shared weather struct.
   s_weather_mutex = xSemaphoreCreateMutex();
+  // Mutex serializes network operations across tasks.
   s_network_mutex = xSemaphoreCreateMutex();
+  // Event groups distribute compact state and UI-change notifications.
   s_light_state_events = xEventGroupCreate();
   s_ui_change_events = xEventGroupCreate();
   strncpy(s_weather_shared.condition, "--", sizeof(s_weather_shared.condition) - 1);
@@ -293,6 +298,7 @@ void set_lamp_state_bit(bool on) {
     return;
   }
 
+  // Publish lamp state as a single event-group bit.
   if (on) {
     xEventGroupSetBits(s_light_state_events, lampStateBit);
   } else {
@@ -305,12 +311,14 @@ void set_selected_rgb_channel(uint8_t active_channel) {
     return;
   }
 
+  // Keep exactly one RGB selection bit active at a time.
   xEventGroupClearBits(s_light_state_events, rgbSelectionMask);
   xEventGroupSetBits(s_light_state_events, active_channel_to_event_bit(active_channel));
 }
 
 void signal_ui_change(EventBits_t bits) {
   if (s_ui_change_events != nullptr) {
+    // Wake display task logic through UI change event bits.
     xEventGroupSetBits(s_ui_change_events, bits);
   }
 }
@@ -328,6 +336,7 @@ bool read_weather_state(WeatherShared &out_state) {
     return false;
   }
 
+  // Non-blocking read avoids stalling display updates.
   if (xSemaphoreTake(s_weather_mutex, 0) != pdTRUE) {
     return false;
   }
@@ -342,6 +351,7 @@ void write_weather_state(const char *condition, int temp_c) {
     return;
   }
 
+  // Block until write lock is available to keep snapshot consistent.
   if (xSemaphoreTake(s_weather_mutex, portMAX_DELAY) != pdTRUE) {
     return;
   }
@@ -361,6 +371,7 @@ void write_weather_state(const char *condition, int temp_c) {
 
 void notify_weather_task() {
   if (s_weather_task_handle != nullptr) {
+    // Task notification is a lightweight RTOS wake-up signal.
     xTaskNotifyGive(s_weather_task_handle);
   }
 }

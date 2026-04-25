@@ -43,6 +43,7 @@ uint8_t rgb_values[channelCount] = {0, 0, 0};
 uint8_t active_channel = 0;
 bool lamp_on = false;
 
+// Protects shared RGB state accessed by the input task and UI task.
 SemaphoreHandle_t s_led_state_mutex = nullptr;
 
 int last_joystick_switch_state = HIGH;
@@ -56,6 +57,7 @@ uint32_t last_interaction_ms = 0;
 int joystick_center_x = 2048;
 QueueHandle_t s_lamp_command_queue = nullptr;
 
+// Task handles are used by ISRs and timer callbacks to wake worker tasks.
 TaskHandle_t s_lamp_task_handle = nullptr;
 TaskHandle_t s_led_task_handle = nullptr;
 
@@ -72,6 +74,7 @@ void notify_task_from_isr(TaskHandle_t task_handle) {
     return;
   }
 
+  // Notify the target task and yield immediately if it should run next.
   BaseType_t higher_priority_task_woken = pdFALSE;
   vTaskNotifyGiveFromISR(task_handle, &higher_priority_task_woken);
   if (higher_priority_task_woken == pdTRUE) {
@@ -80,15 +83,18 @@ void notify_task_from_isr(TaskHandle_t task_handle) {
 }
 
 void IRAM_ATTR lamp_button_isr() {
+  // Lamp button interrupt wakes the lamp control task.
   notify_task_from_isr(s_lamp_task_handle);
 }
 
 void IRAM_ATTR joystick_button_isr() {
+  // Joystick switch interrupt wakes the LED control task.
   notify_task_from_isr(s_led_task_handle);
 }
 
 void joystick_timer_callback(void *arg) {
   (void)arg;
+  // Periodic timer nudges the LED task to sample the joystick axis.
   if (s_led_task_handle != nullptr) {
     xTaskNotifyGive(s_led_task_handle);
   }
@@ -100,6 +106,7 @@ bool send_lamp_http_request(bool on) {
     return false;
   }
 
+  // Use a plain WiFi client because the Shelly relay endpoint is local HTTP.
   WiFiClient client;
   HTTPClient http;
 
@@ -131,6 +138,7 @@ bool send_lamp_http_request(bool on) {
 
 void select_next_channel() {
   if (s_led_state_mutex != nullptr) {
+    // Guard channel selection with the shared LED mutex.
     xSemaphoreTake(s_led_state_mutex, portMAX_DELAY);
   }
   active_channel = static_cast<uint8_t>((active_channel + 1) % channelCount);
@@ -142,6 +150,7 @@ void select_next_channel() {
 
 void adjust_active_channel(int delta) {
   if (s_led_state_mutex != nullptr) {
+    // Guard RGB updates so the display task reads a consistent snapshot.
     xSemaphoreTake(s_led_state_mutex, portMAX_DELAY);
   }
 
@@ -171,6 +180,7 @@ bool update_joystick_axis() {
     return false;
   }
 
+  // Rate-limit analog reads to avoid noisy updates and excess task wakeups.
   last_joystick_update_ms = now;
 
   const int raw_x = analogRead(joystickXPin);
@@ -201,6 +211,7 @@ void calibrate_joystick_center() {
   int total = 0;
   constexpr int sampleCount = 16;
 
+  // Take a short average so the center point reflects the resting joystick position.
   for (int i = 0; i < sampleCount; i++) {
     total += analogRead(joystickXPin);
     delay(2);
@@ -215,6 +226,7 @@ bool update_joystick_switch() {
     return false;
   }
 
+  // Debounce the mechanical switch before rotating to the next channel.
   const uint32_t now = millis();
   if (now - last_joystick_switch_ms < buttonDebounceMs) {
     last_joystick_switch_state = switch_state;
@@ -242,6 +254,7 @@ bool update_lamp_button() {
     return false;
   }
 
+  // Debounce the lamp button before toggling the cached state.
   const uint32_t now = millis();
   if (now - last_lamp_button_ms < buttonDebounceMs) {
     last_lamp_button_state = button_state;
@@ -266,6 +279,7 @@ void init() {
   pinMode(greenPwmPin, OUTPUT);
   pinMode(bluePwmPin, OUTPUT);
 
+  // ESP32 ADC is configured for 12-bit joystick reads.
   analogReadResolution(12);
   analogSetPinAttenuation(joystickXPin, ADC_11db);
 
@@ -290,13 +304,16 @@ void init() {
   last_interaction_ms = millis();
 
   if (s_lamp_command_queue == nullptr) {
+    // One-slot queue always keeps the latest lamp request only.
     s_lamp_command_queue = xQueueCreate(1, sizeof(bool));
   }
 
   if (s_led_state_mutex == nullptr) {
+    // Mutex protects RGB state shared across tasks.
     s_led_state_mutex = xSemaphoreCreateMutex();
   }
 
+  // Interrupts wake the input-processing tasks on button edges.
   attachInterrupt(digitalPinToInterrupt(joystickSwitchPin), joystick_button_isr, CHANGE);
 
   if (lampButtonPin >= 0) {
@@ -304,6 +321,7 @@ void init() {
   }
 
   if (s_joystick_timer == nullptr) {
+    // Timer periodically nudges the joystick axis task to sample analog input.
     const esp_timer_create_args_t timer_args = {
         .callback = &joystick_timer_callback,
         .arg = nullptr,
@@ -349,6 +367,7 @@ bool set_lamp(bool on) {
   last_interaction_ms = millis();
 
   if (s_lamp_command_queue != nullptr) {
+    // Overwrite so the lamp task only processes the newest desired state.
     xQueueOverwrite(s_lamp_command_queue, &on);
   }
 
@@ -361,6 +380,7 @@ bool get_lamp_state() {
 
 void get_led_state(uint8_t &red, uint8_t &green, uint8_t &blue, uint8_t &channel) {
   if (s_led_state_mutex != nullptr) {
+    // Read the LED snapshot atomically for the UI task.
     xSemaphoreTake(s_led_state_mutex, portMAX_DELAY);
   }
 
@@ -379,6 +399,7 @@ bool receive_lamp_command(bool &desired_on, TickType_t wait_ticks) {
     return false;
   }
 
+  // Lamp task blocks here until a new relay target arrives.
   return xQueueReceive(s_lamp_command_queue, &desired_on, wait_ticks) == pdTRUE;
 }
 

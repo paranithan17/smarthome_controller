@@ -3,7 +3,7 @@
  * @brief RTOS bootstrap for the smart home controller project application.
  * @details This program was built as a project work for the course BTE5483
  * Real Time Operating System at Bern University of Applied Sciences during
- * the spring semester 2026.
+ * the spring semester 2026. It was built with the help of AI assistance.
  * @author Paranithan Paramalingam (BFH-TI)
  */
 #include <Arduino.h>
